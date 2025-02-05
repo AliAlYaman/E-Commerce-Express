@@ -1,10 +1,14 @@
 import express from "express";
 import pool from "./config/db"; // Import PostgreSQL connection
+import authRoutes from "./routes/authRoutes";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use("/api", authRoutes);
 
 // Routes
 app.get("/", (req, res) => {
