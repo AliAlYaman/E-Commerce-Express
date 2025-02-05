@@ -14,13 +14,30 @@ app.get("/", (req, res) => {
 // Sample route to fetch users from the database
 app.get("/users", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM users");
+    console.log("Checking database connection...");
+    const client = await pool.connect();
+    console.log("✅ Connected to database");
+
+    // Check current database name
+    const dbNameResult = await client.query("SELECT current_database();");
+    console.log("📌 Connected to Database:", dbNameResult.rows[0].current_database);
+
+    // Check existing tables
+    const tablesResult = await client.query(`
+      SELECT table_name FROM information_schema.tables
+      WHERE table_schema = 'public';
+    `);
+    console.log("📌 Available Tables:", tablesResult.rows.map((row: { table_name: string }) => row.table_name));
+
+    // Run the query
+    const { rows } = await client.query("SELECT * FROM users");
     res.json(rows);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("❌ Error fetching users:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 // Start the server
 app.listen(port, () => {
